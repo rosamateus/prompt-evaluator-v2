@@ -365,7 +365,9 @@ export default function Page() {
   const processFile = async (passwordOverride) => {
     if (!fileData || !apiKey) { setError('Selecione um PDF e configure a API key.'); return; }
 
-    const password = passwordOverride ?? pdfPassword;
+    // Garante que nunca recebe um evento DOM como passwordOverride
+    const safeOverride = (typeof passwordOverride === 'string') ? passwordOverride : undefined;
+    const password = safeOverride ?? pdfPassword;
 
     setLoading(true);
     setError(null);
@@ -737,7 +739,7 @@ export default function Page() {
             </div>
           )}
 
-          <button onClick={processFile} disabled={!fileData || !apiKey || loading} style={{
+          <button onClick={() => processFile()} disabled={!fileData || !apiKey || loading} style={{
             width: '100%', padding: '16px 0', borderRadius: 14, border: 'none',
             background: fileData && apiKey && !loading ? 'linear-gradient(135deg, #5B2D8E, #7B4DB8)' : '#D0CAC0',
             color: '#fff', fontSize: 15, fontWeight: 600, fontFamily: "'DM Sans',sans-serif",
