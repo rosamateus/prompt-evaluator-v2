@@ -323,9 +323,15 @@ function Section({ title, icon, badge, children, defaultOpen = false, warningBan
 // ─── MAIN APP ───
 export default function Page() {
   const [step, setStep] = useState('upload');
-  const [provider, setProvider] = useState('anthropic');
-  const [model, setModel] = useState(PROVIDERS.anthropic.defaultModel);
-  const [apiKey, setApiKey] = useState('');
+  const ENV_PROVIDER    = process.env.NEXT_PUBLIC_DEFAULT_PROVIDER    || 'anthropic';
+  const ENV_MODEL       = process.env.NEXT_PUBLIC_DEFAULT_MODEL       || '';
+  const ENV_API_KEY     = process.env.NEXT_PUBLIC_DEFAULT_API_KEY     || '';
+  const ENV_SUPA_URL    = process.env.NEXT_PUBLIC_DEFAULT_SUPABASE_URL  || '';
+  const ENV_SUPA_KEY    = process.env.NEXT_PUBLIC_DEFAULT_SUPABASE_KEY  || '';
+
+  const [provider, setProvider] = useState(ENV_PROVIDER);
+  const [model, setModel] = useState(ENV_MODEL || PROVIDERS[ENV_PROVIDER]?.defaultModel || PROVIDERS.anthropic.defaultModel);
+  const [apiKey, setApiKey] = useState(ENV_API_KEY);
   const [fileName, setFileName] = useState('');
   const [fileData, setFileData] = useState(null);
   const [result, setResult] = useState(null);
@@ -340,8 +346,8 @@ export default function Page() {
   const [isEncrypted, setIsEncrypted] = useState(false);
   const [pdfPassword, setPdfPassword] = useState('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [supabaseUrl, setSupabaseUrl] = useState('');
-  const [supabaseKey, setSupabaseKey] = useState('');
+  const [supabaseUrl, setSupabaseUrl] = useState(ENV_SUPA_URL);
+  const [supabaseKey, setSupabaseKey] = useState(ENV_SUPA_KEY);
   const [saveStatus, setSaveStatus] = useState(null); // null | 'saving' | 'saved' | 'error' | string
   const fileRef = useRef(null);
   const timerRef = useRef(null);
@@ -349,6 +355,7 @@ export default function Page() {
   useEffect(() => {
     const s = loadSettings();
     if (s) {
+      // localStorage tem prioridade sobre env vars (especialista pode sobrescrever se precisar)
       if (s.provider) setProvider(s.provider);
       if (s.model) setModel(s.model);
       if (s.apiKey) setApiKey(s.apiKey);
