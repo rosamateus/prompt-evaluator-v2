@@ -4,19 +4,15 @@ import { useState, useEffect, useRef } from 'react';
 import { jsonrepair } from 'jsonrepair';
 
 // ─── PDF HELPERS ───
-const PDFJS_VERSION = '5.6.205';
-const PDFJS_CDN = `https://unpkg.com/pdfjs-dist@${PDFJS_VERSION}/build/pdf.min.mjs`;
-const PDFJS_WORKER_CDN = `https://unpkg.com/pdfjs-dist@${PDFJS_VERSION}/build/pdf.worker.min.mjs`;
-
 let _pdfjsPromise = null;
 async function getPdfJs() {
   if (_pdfjsPromise) return _pdfjsPromise;
   _pdfjsPromise = (async () => {
-    // Carrega pdfjs direto do CDN para evitar conflito com o webpack do Next.js
-    const pdfjsLib = await import(/* webpackIgnore: true */ PDFJS_CDN);
-    const lib = pdfjsLib.default ?? pdfjsLib;
-    if (lib.GlobalWorkerOptions && !lib.GlobalWorkerOptions.workerSrc) {
-      lib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_CDN;
+    const mod = await import('pdfjs-dist');
+    const lib = mod.default ?? mod;
+    // disableWorker: evita problemas de worker em mobile e ambientes restritos
+    if (lib.GlobalWorkerOptions) {
+      lib.GlobalWorkerOptions.workerSrc = '';
     }
     return lib;
   })();
@@ -34,7 +30,7 @@ function base64ToBytes(b64) {
 async function checkPdfPassword(base64, password) {
   const pdfjsLib = await getPdfJs();
   try {
-    await pdfjsLib.getDocument({ data: base64ToBytes(base64), password: password || '' }).promise;
+    await pdfjsLib.getDocument({ data: base64ToBytes(base64), password: password || '', disableWorker: true }).promise;
     return false; // success
   } catch (err) {
     if (err?.name === 'PasswordException') {
@@ -46,7 +42,7 @@ async function checkPdfPassword(base64, password) {
 
 async function extractTextFromPdf(base64, password) {
   const pdfjsLib = await getPdfJs();
-  const pdf = await pdfjsLib.getDocument({ data: base64ToBytes(base64), password }).promise;
+  const pdf = await pdfjsLib.getDocument({ data: base64ToBytes(base64), password, disableWorker: true }).promise;
   let text = '';
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
