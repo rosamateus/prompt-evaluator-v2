@@ -8,9 +8,9 @@ let _pdfjsPromise = null;
 async function getPdfJs() {
   if (_pdfjsPromise) return _pdfjsPromise;
   _pdfjsPromise = (async () => {
-    const mod = await import('pdfjs-dist');
+    // Build legacy: inclui polyfills para iOS Safari e browsers mais antigos
+    const mod = await import('pdfjs-dist/legacy/build/pdf.mjs');
     const lib = mod.default ?? mod;
-    // Worker servido do próprio domínio — sem CDN, funciona em mobile e desktop
     if (lib.GlobalWorkerOptions) {
       lib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
     }
