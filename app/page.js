@@ -3,53 +3,29 @@
 import { useState, useEffect, useRef } from 'react';
 import { jsonrepair } from 'jsonrepair';
 
-// ─── PDF HELPERS ───
-let _pdfjsPromise = null;
-async function getPdfJs() {
-  if (_pdfjsPromise) return _pdfjsPromise;
-  _pdfjsPromise = (async () => {
-    // Build legacy: inclui polyfills para iOS Safari e browsers mais antigos
-    const mod = await import('pdfjs-dist/legacy/build/pdf.mjs');
-    const lib = mod.default ?? mod;
-    if (lib.GlobalWorkerOptions) {
-      lib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
-    }
-    return lib;
-  })();
-  return _pdfjsPromise;
-}
+// ─── PDF HELPERS — processamento via API route (Node.js server) ───
+// Evita qualquer problema de browser compatibility com pdfjs
 
-function base64ToBytes(b64) {
-  const binary = atob(b64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return bytes;
-}
-
-// Returns false (ok), 'needs_password', or 'wrong_password'
 async function checkPdfPassword(base64, password) {
-  const pdfjsLib = await getPdfJs();
-  try {
-    await pdfjsLib.getDocument({ data: base64ToBytes(base64), password: password || '', disableWorker: true }).promise;
-    return false; // success
-  } catch (err) {
-    if (err?.name === 'PasswordException') {
-      return err.message?.includes('Incorrect') ? 'wrong_password' : 'needs_password';
-    }
-    return false; // other errors — let the AI handle
-  }
+  const res = await fetch('/api/pdf-extract', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ base64, password }),
+  });
+  const data = await res.json();
+  if (data.status === 'needs_password') return 'needs_password';
+  if (data.status === 'wrong_password') return 'wrong_password';
+  return false;
 }
 
 async function extractTextFromPdf(base64, password) {
-  const pdfjsLib = await getPdfJs();
-  const pdf = await pdfjsLib.getDocument({ data: base64ToBytes(base64), password, disableWorker: true }).promise;
-  let text = '';
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    text += `--- Página ${i} ---\n${content.items.map(x => x.str).join(' ')}\n\n`;
-  }
-  return text;
+  const res = await fetch('/api/pdf-extract', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ base64, password }),
+  });
+  const data = await res.json();
+  return data.text || null;
 }
 
 // ─── SYSTEM PROMPT (prompt exato do app) ───
