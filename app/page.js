@@ -10,9 +10,9 @@ async function getPdfJs() {
   _pdfjsPromise = (async () => {
     const mod = await import('pdfjs-dist');
     const lib = mod.default ?? mod;
-    // disableWorker: evita problemas de worker em mobile e ambientes restritos
+    // Worker servido do próprio domínio — sem CDN, funciona em mobile e desktop
     if (lib.GlobalWorkerOptions) {
-      lib.GlobalWorkerOptions.workerSrc = '';
+      lib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
     }
     return lib;
   })();
