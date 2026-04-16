@@ -383,9 +383,10 @@ export default function Page() {
     try {
       let textContent = null;
 
-      // Detect password protection
+      // Verifica senha e extrai texto — sempre via servidor (funciona em qualquer device)
+      setLoadingMsg('Verificando PDF...');
+
       if (!isEncrypted) {
-        setLoadingMsg('Verificando PDF...');
         const pwdStatus = await checkPdfPassword(fileData, undefined);
         if (pwdStatus === 'needs_password') {
           setIsEncrypted(true);
@@ -397,12 +398,16 @@ export default function Page() {
         }
       }
 
-      // If encrypted, extract text locally
       if (isEncrypted || password) {
+        // PDF com senha: verifica e extrai texto descriptografado
         setLoadingMsg('Descriptografando PDF...');
         const pwdStatus = await checkPdfPassword(fileData, password);
         if (pwdStatus === 'wrong_password') throw new Error('Senha incorreta. Tente novamente.');
         textContent = await extractTextFromPdf(fileData, password);
+      } else {
+        // PDF sem senha: extrai texto no servidor para evitar limitações de MIME type da API
+        setLoadingMsg('Lendo o PDF da apólice...');
+        textContent = await extractTextFromPdf(fileData, null);
       }
 
       const raw = await PROVIDERS[provider].call(apiKey, model, fileData, undefined, textContent);
