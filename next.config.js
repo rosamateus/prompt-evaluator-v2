@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  transpilePackages: ['pdfjs-dist'],
   webpack: (config) => {
-    // pdfjs-dist v5 inclui webpack runtime interno — precisa ignorar o canvas
     config.resolve.alias.canvas = false;
     return config;
   },
