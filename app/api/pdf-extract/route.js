@@ -70,8 +70,8 @@ export async function POST(req) {
         const wrong = err.message?.toLowerCase().includes('incorrect');
         return NextResponse.json({ status: wrong ? 'wrong_password' : 'needs_password' });
       }
-      console.error('[pdf-extract] getDocument error:', err?.message);
-      return NextResponse.json({ status: 'ok', text: null });
+      console.error('[pdf-extract] getDocument error:', err?.name, err?.message);
+      return NextResponse.json({ status: 'ok', text: null, _debug: err?.message });
     }
 
     let text = '';
