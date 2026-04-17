@@ -37,7 +37,6 @@ Campos raiz (strings, null se não encontrado):
 - numeroApolice
 - nomeSeguradora
 - valor (prêmio total, número sem R$)
-- dataVencimento (YYYY-MM-DD)
 - cep
 - logradouro
 - bairro
@@ -48,13 +47,14 @@ Campos raiz (strings, null se não encontrado):
 - nomeSegurado
 - telefoneSegurado
 - dataNascimentoSegurado (YYYY-MM-DD)
-- generoSegurado (M/F/null)
+- generoSegurado ("Masculino" ou "Feminino", nunca abreviação)
 - emailSegurado
 - marcaVeiculo
 - modeloVeiculo
 - anoFabricacao (número)
 - chassi
 - placa
+- classeBonus (número inteiro de 0 a 10, null se não informado)
 
 Campos extras do veículo (na raiz):
 - anoModelo (número)
@@ -66,7 +66,7 @@ Campos extras do veículo (na raiz):
 - cepPernoite
 
 Objeto condutor principal:
-- condutorPrincipal: { nome, dataNascimento (YYYY-MM-DD), genero (M/F/null), estadoCivil, vinculoSegurado, eOSegurado (boolean) }
+- condutorPrincipal: { nome, dataNascimento (YYYY-MM-DD), genero ("Masculino" ou "Feminino"), estadoCivil, vinculoSegurado, eOSegurado (boolean) }
 
 Array de franquias (TODAS, incluindo vidros/faróis em notas de rodapé):
 - franquias: [{ nome, descricao, valor (número) }]
@@ -83,12 +83,62 @@ Objeto de pagamento:
 Outras informações relevantes não mapeadas acima:
 - outrasInformacoes: { observacoes: ["string"] }
 
-REGRAS:
+REGRAS GERAIS:
 - Valores monetários: números sem R$ (ex: 1234.56)
 - Datas: formato YYYY-MM-DD
 - null para campos não encontrados
 - Coberturas "Não contratado" NÃO incluir
-- Retorne SOMENTE o JSON`;
+- Retorne SOMENTE o JSON
+
+REGRAS ESPECÍFICAS POR CAMPO:
+
+nomeSeguradora:
+- Use o NOME COMERCIAL ou MARCA do produto, não a razão social da empresa.
+- Ex: use "Azul Seguro" (não "Porto Seguro") quando o produto for Azul Seguro Auto.
+- Ex: use "Aliro Seguro" (não "Yelum Seguros S.A.") quando o produto for Aliro.
+- Procure o nome/marca destacado na capa ou cabeçalho da apólice.
+
+generoSegurado e condutorPrincipal.genero:
+- Sempre por extenso: "Masculino" ou "Feminino". Nunca "M", "F" ou outra abreviação.
+
+codigoFipe:
+- Extraia EXCLUSIVAMENTE o código da Tabela FIPE Nacional (geralmente 6 dígitos, ex: 152005).
+- Ignore códigos internos da seguradora. O código FIPE costuma estar identificado como "Código FIPE" no documento.
+
+cep e cepPernoite:
+- Formato completo com 8 dígitos incluindo o sufixo (ex: "11015-070").
+- Se o PDF apresentar sem hífen (ex: "11015070"), normalize para "11015-070".
+- Nunca extraia apenas os primeiros 5 dígitos.
+
+condutorPrincipal.vinculoSegurado:
+- Descreva o RELACIONAMENTO do condutor com o segurado: "O próprio", "Cônjuge", "Filho/a", "Funcionário", etc.
+- Não preencha com profissão ou atividade profissional do condutor.
+
+condutorPrincipal.dataNascimento:
+- Se a data de nascimento não estiver disponível mas a IDADE atual estiver informada (ex: "42 anos"), calcule o ano aproximado subtraindo a idade do ano de emissão da apólice. Use "YYYY-01-01" como formato (ex: apólice de 2026, condutor com 42 anos → "1984-01-01").
+- Registre em outrasInformacoes.observacoes que a data foi estimada pela idade.
+
+classeBonus:
+- Número inteiro de 0 a 10 que representa o histórico de sinistros do condutor (presente principalmente em apólices Allianz).
+- null se não informado.
+
+pagamento.premioLiquido:
+- Deve conter o PRÊMIO LÍQUIDO TOTAL da apólice: soma do prêmio líquido de TODAS as coberturas (principais + adicionais + serviços).
+- Não capture apenas o prêmio líquido das coberturas principais — localize o valor total consolidado que antecede o IOF na tabela de pagamento.
+
+coberturasContratadas:
+- Inclua TODAS as coberturas listadas como contratadas, mesmo aquelas com prêmio R$ 0,00 ou marcadas como "GRATUITA".
+- Para coberturas gratuitas, defina premio: 0.
+- Exemplos de coberturas gratuitas a NÃO ignorar: "Extensão de Perímetro", "Isenção de Pagamento de Franquia", "Proteção de Acessórios".
+
+coberturasContratadas[].lmi:
+- Extraia o valor EXATAMENTE como aparece no documento: pode ser valor monetário ("R$ 75.000,00"), percentual da FIPE ("80% da FIPE") ou percentual do veículo ("100% do valor de referência").
+- Nunca deixe null quando o LMI estiver expresso como percentual.
+
+franquias:
+- Quando uma franquia tiver valores distintos por sub-item (ex: vidro dianteiro R$ 710, traseiro R$ 620, lateral R$ 245), crie UMA entrada no array para CADA sub-item, com nome específico e valor numérico correspondente.
+- Nunca agrupe sub-itens com valores distintos em uma única entrada com valor: null.
+- Inclua franquias de vidros, faróis, lanternas e retrovisores mesmo que apareçam em notas de rodapé.`;
 
 // ─── PROVIDERS CONFIG ───
 const USER_MSG = () =>
@@ -837,9 +887,9 @@ export default function Page() {
             <Section title="Apólice & Seguradora" icon="🏢" defaultOpen>
               <EvalRow label="Seguradora" value={r.nomeSeguradora} fieldPath="nomeSeguradora" feedbacks={feedbacks} onToggle={toggleFeedback} onComment={setComment} />
               <EvalRow label="Nº Apólice" value={r.numeroApolice} fieldPath="numeroApolice" feedbacks={feedbacks} onToggle={toggleFeedback} onComment={setComment} />
+              <EvalRow label="Classe Bônus" value={r.classeBonus} fieldPath="classeBonus" feedbacks={feedbacks} onToggle={toggleFeedback} onComment={setComment} />
               <EvalRow label="Vigência Início" value={r.dataInicio} fieldPath="dataInicio" feedbacks={feedbacks} onToggle={toggleFeedback} onComment={setComment} />
               <EvalRow label="Vigência Fim" value={r.dataFim} fieldPath="dataFim" feedbacks={feedbacks} onToggle={toggleFeedback} onComment={setComment} />
-              <EvalRow label="Data Vencimento" value={r.dataVencimento} fieldPath="dataVencimento" feedbacks={feedbacks} onToggle={toggleFeedback} onComment={setComment} />
               <EvalRow label="Prêmio Total" value={fmt(r.valor)} fieldPath="valor" feedbacks={feedbacks} onToggle={toggleFeedback} onComment={setComment} />
             </Section>
 
