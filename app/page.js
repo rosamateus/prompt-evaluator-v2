@@ -321,6 +321,7 @@ export default function Page() {
   const [supabaseUrl, setSupabaseUrl] = useState(ENV_SUPA_URL);
   const [supabaseKey, setSupabaseKey] = useState(ENV_SUPA_KEY);
   const [saveStatus, setSaveStatus] = useState(null); // null | 'saving' | 'saved' | 'error' | string
+  const [hasSaved, setHasSaved] = useState(false); // impede duplo salvamento
   const fileRef = useRef(null);
   const timerRef = useRef(null);
 
@@ -506,7 +507,8 @@ export default function Page() {
       // Sem banco configurado: baixa o arquivo localmente
       downloadJson(summary);
       setSaveStatus('saved');
-      setTimeout(() => setSaveStatus(null), 3000);
+      setHasSaved(true);
+      setTimeout(() => { setSaveStatus(null); setStep('upload'); setResult(null); setHasSaved(false); }, 2000);
       return;
     }
 
@@ -585,7 +587,8 @@ export default function Page() {
       }
 
       setSaveStatus('saved');
-      setTimeout(() => setSaveStatus(null), 3000);
+      setHasSaved(true);
+      setTimeout(() => { setSaveStatus(null); setStep('upload'); setResult(null); setHasSaved(false); }, 2000);
     } catch (err) {
       setSaveStatus(`error: ${err.message}`);
       setTimeout(() => setSaveStatus(null), 8000);
@@ -771,7 +774,7 @@ export default function Page() {
         <div>
           {/* Header */}
           <div style={{ background: 'linear-gradient(135deg, #5B2D8E, #7B4DB8)', padding: '40px 20px 20px', color: '#fff' }}>
-            <button onClick={() => setStep('upload')} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 13, cursor: 'pointer', opacity: 0.8, fontFamily: "'DM Sans',sans-serif", marginBottom: 10 }}>
+            <button onClick={() => { setStep('upload'); setResult(null); setHasSaved(false); setSaveStatus(null); }} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 13, cursor: 'pointer', opacity: 0.8, fontFamily: "'DM Sans',sans-serif", marginBottom: 10 }}>
               ← Nova apólice
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
@@ -981,7 +984,7 @@ export default function Page() {
             {/* Save / Export */}
             <button
               onClick={saveFeedback}
-              disabled={saveStatus === 'saving'}
+              disabled={saveStatus === 'saving' || hasSaved}
               style={{
                 width: '100%', padding: '16px 0', borderRadius: 14, border: 'none',
                 background: saveStatus === 'saved'
