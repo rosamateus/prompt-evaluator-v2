@@ -327,12 +327,13 @@ export default function Page() {
   useEffect(() => {
     const s = loadSettings();
     if (s) {
-      // localStorage tem prioridade sobre env vars (especialista pode sobrescrever se precisar)
-      if (s.provider) setProvider(s.provider);
-      if (s.model) setModel(s.model);
-      if (s.apiKey) setApiKey(s.apiKey);
-      if (s.supabaseUrl) setSupabaseUrl(s.supabaseUrl);
-      if (s.supabaseKey) setSupabaseKey(s.supabaseKey);
+      // Env vars da Vercel têm prioridade absoluta sobre localStorage.
+      // localStorage só preenche campos que não têm env var configurada.
+      if (s.provider && !ENV_PROVIDER) setProvider(s.provider);
+      if (s.model   && !ENV_MODEL)    setModel(s.model);
+      if (s.apiKey  && !ENV_API_KEY)  setApiKey(s.apiKey);
+      if (s.supabaseUrl && !ENV_SUPA_URL) setSupabaseUrl(s.supabaseUrl);
+      if (s.supabaseKey && !ENV_SUPA_KEY) setSupabaseKey(s.supabaseKey);
     }
   }, []);
 
