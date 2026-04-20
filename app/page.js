@@ -66,7 +66,7 @@ Campos extras do veículo (na raiz):
 - cepPernoite
 
 Objeto condutor principal:
-- condutorPrincipal: { nome, dataNascimento (YYYY-MM-DD), genero ("Masculino" ou "Feminino"), estadoCivil, vinculoSegurado, eOSegurado (boolean) }
+- condutorPrincipal: { nome, dataNascimento (YYYY-MM-DD, apenas se constar explicitamente na apólice), idade (número inteiro, apenas se a data de nascimento NÃO estiver disponível), genero ("Masculino" ou "Feminino"), estadoCivil, vinculoSegurado, eOSegurado (boolean) }
 
 Array de franquias (TODAS, incluindo vidros/faróis em notas de rodapé):
 - franquias: [{ nome, descricao, valor (número) }]
@@ -114,9 +114,10 @@ condutorPrincipal.vinculoSegurado:
 - Descreva o RELACIONAMENTO do condutor com o segurado: "O próprio", "Cônjuge", "Filho/a", "Funcionário", etc.
 - Não preencha com profissão ou atividade profissional do condutor.
 
-condutorPrincipal.dataNascimento:
-- Se a data de nascimento não estiver disponível mas a IDADE atual estiver informada (ex: "42 anos"), calcule o ano aproximado subtraindo a idade do ano de emissão da apólice. Use "YYYY-01-01" como formato (ex: apólice de 2026, condutor com 42 anos → "1984-01-01").
-- Registre em outrasInformacoes.observacoes que a data foi estimada pela idade.
+condutorPrincipal.dataNascimento e condutorPrincipal.idade:
+- Se a data de nascimento estiver EXPLICITAMENTE informada na apólice → extraia em condutorPrincipal.dataNascimento (YYYY-MM-DD). Omita condutorPrincipal.idade.
+- Se a data de nascimento NÃO estiver disponível mas a IDADE estiver informada (ex: "42 anos") → extraia condutorPrincipal.idade como número inteiro (ex: 42). Omita condutorPrincipal.dataNascimento.
+- Nunca estime nem calcule datas de nascimento a partir da idade. Nunca inclua ambos os campos ao mesmo tempo. Não registre nenhuma observação sobre isso.
 
 classeBonus:
 - Número inteiro de 0 a 10 que representa o histórico de sinistros do condutor (presente principalmente em apólices Allianz).
@@ -138,7 +139,9 @@ coberturasContratadas[].lmi:
 franquias:
 - Quando uma franquia tiver valores distintos por sub-item (ex: vidro dianteiro R$ 710, traseiro R$ 620, lateral R$ 245), crie UMA entrada no array para CADA sub-item, com nome específico e valor numérico correspondente.
 - Nunca agrupe sub-itens com valores distintos em uma única entrada com valor: null.
-- Inclua franquias de vidros, faróis, lanternas e retrovisores mesmo que apareçam em notas de rodapé.`;
+- Inclua franquias de vidros, faróis, lanternas e retrovisores mesmo que apareçam em notas de rodapé.
+- O valor de uma franquia pode ser R$ 0,00 — extraia como 0 (zero), nunca como null.`;
+
 
 // ─── PROVIDERS CONFIG ───
 const USER_MSG = () =>
@@ -906,7 +909,10 @@ export default function Page() {
             {/* Condutor Principal */}
             <Section title="Condutor Principal" icon="🪪">
               <EvalRow label="Nome" value={r.condutorPrincipal?.nome} fieldPath="condutor.nome" feedbacks={feedbacks} onToggle={toggleFeedback} onComment={setComment} />
-              <EvalRow label="Data de Nascimento" value={r.condutorPrincipal?.dataNascimento} fieldPath="condutor.dataNascimento" feedbacks={feedbacks} onToggle={toggleFeedback} onComment={setComment} />
+              {r.condutorPrincipal?.dataNascimento
+                ? <EvalRow label="Data de Nascimento" value={r.condutorPrincipal.dataNascimento} fieldPath="condutor.dataNascimento" feedbacks={feedbacks} onToggle={toggleFeedback} onComment={setComment} />
+                : <EvalRow label="Idade" value={r.condutorPrincipal?.idade != null ? `${r.condutorPrincipal.idade} anos` : null} fieldPath="condutor.idade" feedbacks={feedbacks} onToggle={toggleFeedback} onComment={setComment} />
+              }
               <EvalRow label="Gênero" value={r.condutorPrincipal?.genero} fieldPath="condutor.genero" feedbacks={feedbacks} onToggle={toggleFeedback} onComment={setComment} />
               <EvalRow label="Estado Civil" value={r.condutorPrincipal?.estadoCivil} fieldPath="condutor.estadoCivil" feedbacks={feedbacks} onToggle={toggleFeedback} onComment={setComment} />
               <EvalRow label="Vínculo com Segurado" value={r.condutorPrincipal?.vinculoSegurado} fieldPath="condutor.vinculo" feedbacks={feedbacks} onToggle={toggleFeedback} onComment={setComment} />
