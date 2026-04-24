@@ -140,7 +140,8 @@ franquias:
 - Quando uma franquia tiver valores distintos por sub-item (ex: vidro dianteiro R$ 710, traseiro R$ 620, lateral R$ 245), crie UMA entrada no array para CADA sub-item, com nome específico e valor numérico correspondente.
 - Nunca agrupe sub-itens com valores distintos em uma única entrada com valor: null.
 - Inclua franquias de vidros, faróis, lanternas e retrovisores mesmo que apareçam em notas de rodapé.
-- O valor de uma franquia pode ser R$ 0,00 — extraia como 0 (zero), nunca como null.`;
+- O valor de uma franquia pode ser R$ 0,00 — extraia como 0 (zero), nunca como null.
+- O campo "nome" deve conter APENAS o nome específico da peça (ex: "Para-brisa", "Farol Matrix", "Lanterna de LED"). Nunca use o cabeçalho de agrupamento como nome (ex: nunca coloque "Cobertura Especial para Vidros" como nome — isso é uma categoria, não o nome da peça). Se o documento apresentar um grupo com título genérico seguido de uma lista de peças, use o nome de cada peça individual no campo "nome".`;
 
 
 // ─── PROVIDERS CONFIG ───
