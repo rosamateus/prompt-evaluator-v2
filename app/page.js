@@ -101,6 +101,11 @@ nomeSeguradora:
 generoSegurado e condutorPrincipal.genero:
 - Sempre por extenso: "Masculino" ou "Feminino". Nunca "M", "F" ou outra abreviação.
 
+marcaVeiculo e modeloVeiculo:
+- marcaVeiculo deve conter APENAS a montadora/fabricante (ex: "Volkswagen", "Fiat", "Toyota", "Honda", "Chevrolet"). Nunca inclua o nome do modelo neste campo.
+- modeloVeiculo deve conter o restante da descrição do veículo (ex: "T-Cross Comfortline 1.0 TSI Flex 5P Aut.", "Onix Plus 1.0 Turbo"). Nunca repita a marca aqui.
+- Se o documento apresentar marca e modelo juntos (ex: "VW T-CROSS COMFORTLINE"), separe: marca = "Volkswagen", modelo = "T-Cross Comfortline".
+
 codigoFipe:
 - Extraia EXCLUSIVAMENTE o código da Tabela FIPE Nacional (geralmente 6 dígitos, ex: 152005).
 - Ignore códigos internos da seguradora. O código FIPE costuma estar identificado como "Código FIPE" no documento.
