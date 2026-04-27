@@ -144,6 +144,7 @@ coberturasContratadas[].lmi:
 - Nunca deixe null quando o LMI estiver expresso como percentual.
 
 franquias:
+- SEMPRE inclua a franquia principal do veículo/casco (colisão, perda total, roubo). Esta é a franquia mais importante e nunca deve ser omitida. Ela costuma aparecer como "Franquia", "Franquia do Veículo", "Casco", "Colisão" ou similar, com valor em R$.
 - Quando uma franquia tiver valores distintos por sub-item (ex: vidro dianteiro R$ 710, traseiro R$ 620, lateral R$ 245), crie UMA entrada no array para CADA sub-item, com nome específico e valor numérico correspondente.
 - Nunca agrupe sub-itens com valores distintos em uma única entrada com valor: null.
 - Inclua franquias de vidros, faróis, lanternas e retrovisores mesmo que apareçam em notas de rodapé.
