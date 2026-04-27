@@ -105,6 +105,7 @@ marcaVeiculo e modeloVeiculo:
 - marcaVeiculo deve conter APENAS a montadora/fabricante (ex: "Volkswagen", "Fiat", "Toyota", "Honda", "Chevrolet"). Nunca inclua o nome do modelo neste campo.
 - modeloVeiculo deve conter o restante da descrição do veículo (ex: "T-Cross Comfortline 1.0 TSI Flex 5P Aut.", "Onix Plus 1.0 Turbo"). Nunca repita a marca aqui.
 - Se o documento apresentar marca e modelo juntos (ex: "VW T-CROSS COMFORTLINE"), separe: marca = "Volkswagen", modelo = "T-Cross Comfortline".
+- Se a marca não aparecer explicitamente mas o modelo for conhecido, infira a montadora pelo nome do modelo (ex: "FASTBACK" → Fiat; "COMPASS" → Jeep; "COROLLA" → Toyota; "HB20" → Hyundai; "KWID" → Renault). Nunca coloque o nome do modelo no campo marcaVeiculo.
 
 codigoFipe:
 - Extraia EXCLUSIVAMENTE o código da Tabela FIPE Nacional (geralmente 6 dígitos, ex: 152005).
@@ -133,9 +134,10 @@ pagamento.premioLiquido:
 - Não capture apenas o prêmio líquido das coberturas principais — localize o valor total consolidado que antecede o IOF na tabela de pagamento.
 
 coberturasContratadas:
-- Inclua TODAS as coberturas listadas como contratadas, mesmo aquelas com prêmio R$ 0,00 ou marcadas como "GRATUITA".
-- Para coberturas gratuitas, defina premio: 0.
+- Inclua APENAS coberturas efetivamente contratadas. Exclua qualquer cobertura marcada como "Não contratado", "Não incluído", "Não contratada" ou equivalente — mesmo que apareça na lista de coberturas do documento.
+- Inclua coberturas com prêmio R$ 0,00 ou marcadas como "GRATUITA" desde que estejam contratadas. Para coberturas gratuitas, defina premio: 0.
 - Exemplos de coberturas gratuitas a NÃO ignorar: "Extensão de Perímetro", "Isenção de Pagamento de Franquia", "Proteção de Acessórios".
+- Se um serviço como "Carro Reserva" ou "Assistência 24h" aparecer como "Não contratado" ou sem contratação, NÃO inclua em coberturasContratadas nem em servicosAdicionais.
 
 coberturasContratadas[].lmi:
 - Extraia o valor EXATAMENTE como aparece no documento: pode ser valor monetário ("R$ 75.000,00"), percentual da FIPE ("80% da FIPE") ou percentual do veículo ("100% do valor de referência").
