@@ -145,7 +145,7 @@ coberturasContratadas[].lmi:
 
 franquias:
 - SEMPRE inclua a franquia principal do veículo/casco (colisão, perda total, roubo). Esta é a franquia mais importante e nunca deve ser omitida. Ela costuma aparecer como "Franquia", "Franquia do Veículo", "Casco", "Colisão" ou similar, com valor em R$.
-- Em tabelas com colunas "Cobertura | Franquia | Prêmio Líquido" (formato Suhai e similares), extraia o valor da coluna "Franquia" — nunca da coluna "Prêmio Líquido" que fica à sua direita. Se a franquia for R$ 0,00, registre como 0 (zero) e NÃO busque outro valor no lugar.
+- Em apólices Suhai, o texto extraído do PDF apresenta os valores monetários fora de ordem: os valores de Prêmio Líquido (ex: R$ 902,36 e R$ 385,84) aparecem ANTES dos nomes das coberturas no fluxo de texto, logo após os cabeçalhos "Franquia: Prêmio Líquido:". Os valores reais das franquias (ex: R$ 0,00) aparecem DEPOIS dos nomes das coberturas. Portanto: os primeiros valores monetários após o cabeçalho são Prêmio Líquido — ignore-os para franquias. Os valores de franquia são os que aparecem após os nomes das coberturas (EXCLUSIVA ROUBO/FURTO TOTAL, SERVIÇO DE ASSISTÊNCIA 24H etc.).
 - Em tabelas largas do tipo "Coberturas Auto" (formato HDI e similares), a franquia do Casco está na coluna "Franquia" da linha "Casco" — mesmo que seja a última coluna da tabela. Não ignore esse valor por estar em posição distante.
 - Quando uma franquia tiver valores distintos por sub-item (ex: vidro dianteiro R$ 710, traseiro R$ 620, lateral R$ 245), crie UMA entrada no array para CADA sub-item, com nome específico e valor numérico correspondente.
 - Nunca agrupe sub-itens com valores distintos em uma única entrada com valor: null.
