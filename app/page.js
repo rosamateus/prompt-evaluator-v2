@@ -145,10 +145,12 @@ coberturasContratadas[].lmi:
 
 franquias:
 - SEMPRE inclua a franquia principal do veículo/casco (colisão, perda total, roubo). Esta é a franquia mais importante e nunca deve ser omitida. Ela costuma aparecer como "Franquia", "Franquia do Veículo", "Casco", "Colisão" ou similar, com valor em R$.
+- Em tabelas com colunas "Cobertura | Franquia | Prêmio Líquido" (formato Suhai e similares), extraia o valor da coluna "Franquia" — nunca da coluna "Prêmio Líquido" que fica à sua direita. Se a franquia for R$ 0,00, registre como 0 (zero) e NÃO busque outro valor no lugar.
+- Em tabelas largas do tipo "Coberturas Auto" (formato HDI e similares), a franquia do Casco está na coluna "Franquia" da linha "Casco" — mesmo que seja a última coluna da tabela. Não ignore esse valor por estar em posição distante.
 - Quando uma franquia tiver valores distintos por sub-item (ex: vidro dianteiro R$ 710, traseiro R$ 620, lateral R$ 245), crie UMA entrada no array para CADA sub-item, com nome específico e valor numérico correspondente.
 - Nunca agrupe sub-itens com valores distintos em uma única entrada com valor: null.
 - Inclua franquias de vidros, faróis, lanternas e retrovisores mesmo que apareçam em notas de rodapé.
-- O valor de uma franquia pode ser R$ 0,00 — extraia como 0 (zero), nunca como null.
+- O valor de uma franquia pode ser R$ 0,00 — extraia como 0 (zero), nunca como null. Franquia zero é válida e não deve ser substituída por outro valor.
 - O campo "nome" deve conter APENAS o nome específico da peça (ex: "Para-brisa", "Farol Matrix", "Lanterna de LED"). Nunca use o cabeçalho de agrupamento como nome (ex: nunca coloque "Cobertura Especial para Vidros" como nome — isso é uma categoria, não o nome da peça). Se o documento apresentar um grupo com título genérico seguido de uma lista de peças, use o nome de cada peça individual no campo "nome".`;
 
 
